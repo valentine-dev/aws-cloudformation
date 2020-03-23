@@ -28,12 +28,13 @@ When you use AWS CloudFormation, you manage related resources as a single unit c
 - Log in to the AWS Management Console and select **CloudFormation** in the **Services** menu.
 - Create a new stack by using one of the following options:
   - Click **Create Stack**. This is the only option if you have a currently running stack.
-  - Click **Create Stack** on the **Stacks page**. This option is visible only if you have no running stacks.
-  
-  
+  - Click **Create Stack** on the **Stacks page**. This option is visible only if you have no running stacks.    
 - On the **Specify template** page: ![Step 1: Specify template](aws_create_stack_step1.png)
   - Choose **Template is ready** in the **Prerequisite - Prepare template** section .
   - Choose **Upload a template file** in the **Specify template** section.Select a CloudFormation template on your local computer.
   - Choose **Choose File** to select the template file that you are given as the above. The template can be a maximum size of 460,800 bytes. Once you have chosen your template, CloudFormation uploads the file and displays the S3 URL.
   - To accept your settings, choose **Next**. Before creating resources, AWS CloudFormation validates your template to catch syntactic and some semantic errors, such as circular dependencies. During validation, AWS CloudFormation first checks if the template is valid JSON. If it isn't, AWS CloudFormation checks if the template is valid YAML. If both checks fail, AWS CloudFormation returns a template validation error.
-
+- On the **Specify stack details** page: ![Step 2: Specify stack details](aws_create_stack_step2.png)
+ - Type a stack name in the **Stack name** box. The stack name is an identifier that helps you find a particular stack from a list of stacks. A stack name can contain only alphanumeric characters (case-sensitive) and hyphens. It must start with an alphabetic character and can't be longer than 128 characters.
+ - In the **Parameters** section, specify parameters that are defined in the stack template and provided by developer.
+ - When you are satisfied with the parameter values, click **Next**.
