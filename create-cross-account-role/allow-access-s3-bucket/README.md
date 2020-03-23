@@ -37,4 +37,4 @@ When you use AWS CloudFormation, you manage related resources as a single unit c
   - Type a stack name in the **Stack name** box. The stack name is an identifier that helps you find a particular stack from a list of stacks. A stack name can contain only alphanumeric characters (case-sensitive) and hyphens. It must start with an alphabetic character and can't be longer than 128 characters.
   - In the **Parameters** section, specify parameters that are defined in the stack template and provided by developer.
   - When you are satisfied with the parameter values, click **Next**.
-- On the **Configure stack options** page of the **Create stack** wizard, scroll down, and click **Next** to proceed. ![Step 3-1: Specify template](aws_create_stack_step3_part1.png) ![Step 3-2: Specify template](aws_create_stack_step3_part2.png)
+- On the **Configure stack options** page of the **Create stack** wizard, scroll down, and click **Next** to proceed. ![Step 3-1: Configure stack options (2-1)](aws_create_stack_step3_part1.png) ![Step 3-2: Configure stack options (2-2)](aws_create_stack_step3_part2.png)
