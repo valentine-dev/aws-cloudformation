@@ -39,3 +39,4 @@ When you use AWS CloudFormation, you manage related resources as a single unit c
   - When you are satisfied with the parameter values, click **Next**.
 - On the **Configure stack options** page of the **Create stack** wizard, scroll down, and click **Next** to proceed. ![Step 3-1: Configure stack options (2-1)](aws_create_stack_step3_part1.png) ![Step 3-2: Configure stack options (2-2)](aws_create_stack_step3_part2.png)
 - On the **Review** page, scroll down, check "**I acknowledge that AWS CloudFormation might create IAM resources.**", and click **Create stack** to create the stack. ![Step 4-1: Review (2-1)](aws_create_stack_step4_part1.png) ![Step 4-2: Review (2-2)](aws_create_stack_step4_part2.png)
+- On the created stack page, click the **Outputs** tab, and write down the values for the use of developer. ![Created stack](aws_create_stack_completed.png) 
