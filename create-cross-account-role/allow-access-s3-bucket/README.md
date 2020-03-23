@@ -1,6 +1,3 @@
-# Feature
-Create a cross-account IAM role to allow a role (or roles) from another AWS account to access data in S3 bucket. 
-
 # Creating a Stack for Cross-Account Role Setup on the AWS CloudFormation Console
 For developer to consume the data in S3 bucket on customer side, you have to set up a cross account role and give the required information to developer (S3 bucket name, ARN of the created cross-account role, S3 region).
 
@@ -31,7 +28,7 @@ When you use AWS CloudFormation, you manage related resources as a single unit c
 -- Click Create Stack. This is the only option if you have a currently running stack.
 -- Click Create Stack on the Stacks page. This option is visible only if you have no running stacks.
 - On the Specify template page:
--- Choose Template is ready in the Prerequisite - Prepare template section .
--- Choose Upload a template file in the Specify template section.Select a CloudFormation template on your local computer. -- --- Choose Choose File to select the template file that you are given as the above. The template can be a maximum size of 460,800 bytes. Once you have chosen your template, CloudFormation uploads the file and displays the S3 URL.
-To accept your settings, choose Next. Before creating resources, AWS CloudFormation validates your template to catch syntactic and some semantic errors, such as circular dependencies. During validation, AWS CloudFormation first checks if the template is valid JSON. If it isn't, AWS CloudFormation checks if the template is valid YAML. If both checks fail, AWS CloudFormation returns a template validation error.
+- - Choose Template is ready in the Prerequisite - Prepare template section .
+- - Choose Upload a template file in the Specify template section.Select a CloudFormation template on your local computer. -- - - Choose Choose File to select the template file that you are given as the above. The template can be a maximum size of 460,800 bytes. Once you have chosen your template, CloudFormation uploads the file and displays the S3 URL.
+- - To accept your settings, choose Next. Before creating resources, AWS CloudFormation validates your template to catch syntactic and some semantic errors, such as circular dependencies. During validation, AWS CloudFormation first checks if the template is valid JSON. If it isn't, AWS CloudFormation checks if the template is valid YAML. If both checks fail, AWS CloudFormation returns a template validation error.
 
