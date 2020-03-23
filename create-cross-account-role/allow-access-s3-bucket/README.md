@@ -29,7 +29,9 @@ When you use AWS CloudFormation, you manage related resources as a single unit c
 - Create a new stack by using one of the following options:
   - Click **Create Stack**. This is the only option if you have a currently running stack.
   - Click **Create Stack** on the **Stacks page**. This option is visible only if you have no running stacks.
-- On the **Specify template** page:
+  
+  
+- On the **Specify template** page: ![Step 1: Specify template](image.jpg)
   - Choose **Template is ready** in the **Prerequisite - Prepare template** section .
   - Choose **Upload a template file** in the **Specify template** section.Select a CloudFormation template on your local computer.
   - Choose **Choose File** to select the template file that you are given as the above. The template can be a maximum size of 460,800 bytes. Once you have chosen your template, CloudFormation uploads the file and displays the S3 URL.
