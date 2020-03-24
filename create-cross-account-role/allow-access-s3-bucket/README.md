@@ -12,8 +12,8 @@ An AWS CloudFormation template is a JSON or YAML formatted text file. You can sa
 When you use AWS CloudFormation, you manage related resources as a single unit called a stack. You create, update, and delete a collection of resources by creating, updating, and deleting stacks. All the resources in a stack are defined by the stack's AWS CloudFormation template. Suppose you created a template that includes an Auto Scaling group, Elastic Load Balancing load balancer, and an Amazon Relational Database Service (Amazon RDS) database instance. To create those resources, you create a stack by submitting the template that you created, and AWS CloudFormation provisions all those resources for you. You can work with stacks by using the AWS CloudFormation console, API, or AWS CLI.
 
 ## Template to Create a Stack for Cross Account Role Setup - Provided by Developer
-- One trusted role
-- Multiple trusted roles
+- [One trusted role](https://github.com/valentine-dev/aws-cloudformation/blob/master/create-cross-account-role/allow-access-s3-bucket/trust-one-role/template.json)
+- [Multiple trusted roles](https://github.com/valentine-dev/aws-cloudformation/blob/master/create-cross-account-role/allow-access-s3-bucket/trust-one-role/template.json)
 
 ## Input Parameters
 - **External ID** (provided by developer): Used in an IAM role trust policy to designate who can assume the role (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html)
