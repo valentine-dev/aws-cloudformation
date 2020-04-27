@@ -458,11 +458,9 @@
               [
                 "#!/bin/bash\n",
                 "yum update -y \n",
-                "yum install python3.7 -y\n",
                 "yum install java-1.8.0-openjdk-devel -y\n",
                 "yum erase awscli -y\n",
                 "cd /home/ec2-user\n",
-                "echo 'export PATH=.local/bin:$PATH' >> .bash_profile\n",
                 "wget https://archive.apache.org/dist/kafka/",
                 {
                   "Ref": "KafkaVersion"
@@ -498,19 +496,24 @@
                 "chown ec2-user:ec2-user ./client.properties\n",
                 "chmod 755 ./client.properties\n",
                 "cd /home/ec2-user\n",
-                "wget https://bootstrap.pypa.io/get-pip.py\n",
-                "su -c 'python3.7 get-pip.py --user' -s /bin/sh ec2-user\n",
-                "su -c 'pip3 install boto3 --user' -s /bin/sh ec2-user\n",
-                "su -c 'pip3 install awscli --user' -s /bin/sh ec2-user\n",
-                "su -c 'aws kafka get-bootstrap-brokers --cluster-arn ",
-                {
-                  "Ref": "ClusterWith3AvailabilityZones"
-                },
-                " --region ",
+                "wget https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip\n",
+                "unzip awscli-exe-linux-x86_64.zip\n",
+                "./aws/install\n",
+                "mkdir .aws\n",
+                "echo '[default]' > .aws/config\n",
+                "echo 'region = ",
                 {
                   "Ref": "AWS::Region"
                 },
-                " > ./bootstrap-brokers.json' -s /bin/sh ec2-user\n"
+                "' >> .aws/config\n",
+                "/usr/local/bin/aws kafka get-bootstrap-brokers --cluster-arn '",
+                {
+                  "Ref": "ClusterWith3AvailabilityZones"
+                },
+                "' > ./bootstrap-brokers.json\n",
+                "chown -R ec2-user:ec2-user ./.aws\n",
+                "chown ec2-user:ec2-user ./bootstrap-brokers.json\n",
+                "chmod 755 ./bootstrap-brokers.json\n"
               ]
             ]
           }
