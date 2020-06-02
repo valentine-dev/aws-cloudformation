@@ -1,0 +1,160 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Get Custom MSK Configuration
+Outputs:
+  CustomMSKConfigurationArn:
+    Description: ARN of the Custom MSK Configuration
+    Value: !GetAtt 
+      - CustomMSKConfigurationInfo
+      - Info
+    Export:
+      Name: !Sub '${AWS::StackName}-CustomMSKConfigurationArn'
+Parameters:
+  KafkaVersion:
+    Type: String
+    Default: 2.2.1
+    AllowedValues:
+      - 2.2.1
+      - 2.3.1
+      - 2.4.1
+      - 2.5.1
+    Description: Kafka Version
+  S3BucketName:
+    Type: String
+    Description: S3 Bucket Name
+  S3ObjectKeyName:
+    Type: String
+    Description: S3 Object Key Name
+Resources:
+  CustomMSKConfigurationInfo:
+    Type: Custom::CustomMSKConfigurationInfo
+    Properties:
+      ServiceToken: !GetAtt 
+        - CustomMSKConfigurationInfoFunction
+        - Arn
+      s3BucketName: !Ref S3BucketName
+      s3ObjectKeyName: !Ref S3ObjectKeyName
+      kafkaVersion: !Ref KafkaVersion
+  CustomMSKConfigurationInfoFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt 
+        - LambdaExecutionRole
+        - Arn
+      Code:
+        ZipFile: |
+          aws = require('aws-sdk')
+          s3 = new aws.S3()
+          kafka = new aws.Kafka()
+          response = require('cfn-response')
+          
+          exports.handler = function(event, context) {
+            context.callbackWaitsForEmptyEventLoop = false
+            if (event.RequestType == "Delete") {
+              response.send(event, context, "SUCCESS")
+              return
+            }
+            let responseStatus = "FAILED"
+            let responseData = {}
+            let params = {
+              Bucket: event.ResourceProperties.s3BucketName,
+              Key: event.ResourceProperties.s3ObjectKeyName
+            }
+            let kafkaVersion = event.ResourceProperties.kafkaVersion
+            s3.getObject(params, function(err, s3Data) {
+              if (err) {
+                responseData = {Error: "S3 call failed"}
+                response.send(event, context, responseStatus, responseData)
+                return
+              } else {
+                let configFileContent = s3Data.Body.toString('utf-8')
+                kafka.listConfigurations({}, function(err, listConfigData) {
+                  if (err) {
+                    responseData = {Error: "Kafka ListConfigurations call failed"}
+                    response.send(event, context, responseStatus, responseData)
+                    return
+                  } else {
+                    let remainingCalls = listConfigData.Configurations.length
+                    for (let config of listConfigData.Configurations) {
+                      if (config.KafkaVersions.includes(kafkaVersion)) {
+                        let params = { Arn: config.Arn, Revision: 1 }
+                        kafka.describeConfigurationRevision(params, function(err, getConfigData) {
+                          if (err) {
+                            responseData = {Error: "Kafka describeConfigurationRevision call failed"}
+                            response.send(event, context, responseStatus, responseData)
+                            return
+                          } else {
+                            let configContent = getConfigData.ServerProperties.toString('utf-8');
+                            if (configContent.trim() === configFileContent.trim() && responseStatus !== "SUCCESS") {
+                              responseStatus = "SUCCESS"
+                              responseData = {Info: getConfigData.Arn}
+                              response.send(event, context, responseStatus, responseData)
+                              return
+                            }
+                          }
+                          --remainingCalls
+                          if (remainingCalls <= 0 && responseStatus !== "SUCCESS") {
+                            const configName = event.ResourceProperties.s3ObjectKeyName.replace(/[^A-Za-z0-9]/g, '-') + '-' + Date.now();
+                            
+                            const createParams = {
+                              KafkaVersions: [ kafkaVersion ],
+                              Name: configName,
+                              ServerProperties: configFileContent,
+                              Description: 'Custom MSK Configuration Created from S3 File'
+                            };
+                            kafka.createConfiguration(createParams, function(err, createConfigData) {
+                              if (err) {
+                                responseData = {Error: "Kafka createConfiguration call failed"}
+                                response.send(event, context, responseStatus, responseData)
+                                return
+                              } else {
+                                responseStatus = "SUCCESS"
+                                responseData = {Info: createConfigData.Arn}
+                                response.send(event, context, responseStatus, responseData)
+                                return
+                              } 
+                            });
+                          }
+                        })
+                      } else {
+                        --remainingCalls
+                        if (remainingCalls <= 0 && responseStatus !== "SUCCESS") {
+                          responseStatus = "SUCCESS"
+                          responseData = {Info: "No matching version."}
+                          response.send(event, context, responseStatus, responseData)
+                          return
+                        }
+                      }
+                    }
+                  }
+                })
+              }
+            })
+          }
+      Runtime: nodejs12.x
+      Timeout: 30
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSLambdaExecute
+      Policies:
+        - PolicyName: ConfigurationOperations
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kafka:CreateConfiguration
+                  - kafka:DescribeConfigurationRevision
+                  - kafka:ListConfigurations
+                Resource: '*'
