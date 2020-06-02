@@ -1,6 +1,6 @@
 #!/bin/bash
 
-aws cloudformation create-stack --stack-name MSK-GetCustomConfiguration-Stack --template-body file://get-custom-msk-configuration.yaml --parameters ParameterKey="S3BucketName",ParameterValue="dev-valentine" ParameterKey="S3ObjectKeyName",ParameterValue="DataToShare/custom-config-info-matching" --capabilities CAPABILITY_IAM
+aws cloudformation create-stack --stack-name MSK-GetCustomConfiguration-Stack --template-body file://get-custom-msk-config.yaml --parameters ParameterKey="S3BucketName",ParameterValue="dev-valentine" ParameterKey="S3ObjectKeyName",ParameterValue="DataToShare/custom-config-info-matching" --capabilities CAPABILITY_IAM
 echo " -- Start creating stack MSK-GetCustomConfiguration-Stack ..."
 echo " -- Wait 2 minutes for the stack creation to complete ..."
 sleep 60 
