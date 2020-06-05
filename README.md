@@ -8,5 +8,5 @@ Certified Professional in:
 - Architecture Development Methodology
 
 Websites: 
-https://enjoyit-consulting.github.io
-https://supportlocalbc.com/collections/burnaby/products/enjoyit-consulting-inc
+# https://enjoyit-consulting.github.io
+# https://supportlocalbc.com/collections/burnaby/products/enjoyit-consulting-inc
