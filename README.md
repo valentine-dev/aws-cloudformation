@@ -3,7 +3,7 @@ AWS CloudFormation Templates
 
 ## Valentine Wu, MSc in Computing Science
 Application Architect / Software Engineer, Certified Professional in:
-- Cloud Computing(Engineer & Architect)
+- [Cloud Computing](https://www.credential.net/profile/shufangwu/wallet)(Engineer & Architect)
 - Architecture Development Methodology
 
 ## Websites: 
