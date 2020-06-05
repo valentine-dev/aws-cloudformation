@@ -7,6 +7,6 @@ Certified Professional in:
 - Cloud Computing(Engineer & Architect)
 - Architecture Development Methodology
 
-Websites: 
-# https://enjoyit-consulting.github.io
-# https://supportlocalbc.com/collections/burnaby/products/enjoyit-consulting-inc
+## Websites: 
+- https://enjoyit-consulting.github.io
+- https://supportlocalbc.com/collections/burnaby/products/enjoyit-consulting-inc
