@@ -1,5 +1,5 @@
 # aws-cloudformation
-Here are some of the AWS CloudFormation templates I created.
+Here are some of the AWS CloudFormation templates I created. Please use them freely.
 
 ## Valentine Wu, MSc in Computing Science
 Application Architect / Software Engineer, Certified Professional in:
