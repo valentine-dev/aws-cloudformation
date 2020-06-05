@@ -3,5 +3,5 @@
 
 For CloudFormation, it would take some time to integrate them for native support. There are open feature requests ([AdvancedSecurityOptions](https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/384), [DomainEndpointOptions](https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/201)) on the road map and you can vote there.
 
-# Implementation CloudFormation Custom Resource
+# Implementation using CloudFormation Custom Resource
 Here I use Lambda backed custom resource in CloudFormation to create ElasticSearch domain and enable the missing options programatically.
