@@ -9,10 +9,10 @@
 2. Make sure that AWS CLI is set up at local.
 3. Run `startup.sh` to create a stack to set up the infrastructure with AES domain in it.
 4. Wait until the status of stack **Valentine-Test-AES-Stack** is CREATE_COMPLETE (about 15 minutes).
-5. Run `aws es describe-elasticsearch-domain --domain-name valentine-test-aes` to get domain configuration information about the created AES domain, including the domain ID, domain endpoint, and domain ARN.
-6. Run `aws es describe-elasticsearch-domain-config --domain-name valentine-test-aes` to get cluster configuration information about the created AES domain, such as the state, creation date, update version, and update date for cluster options.
+5. Run `aws es describe-elasticsearch-domain --domain-name valentine-test-aes` to get domain configuration information about the created AES domain, which should include the domain ID, domain endpoint, and domain ARN.
+6. Run `aws es describe-elasticsearch-domain-config --domain-name valentine-test-aes` to get cluster configuration information about the created AES domain, which should include the state, creation date, update version, and update date for cluster options.
 7. Run `connect-to-client-instance.sh` to connect to the client instance through SSH (make sure the private key file is in the current directory).
-8. Run `show-indices.sh` to show the current indices of the created AES domain, which should look like:
+8. Run `show-indices.sh` to show the current indices of the created AES domain, and verify that the output should look like:
 ```
 health status index     uuid                   pri rep docs.count docs.deleted store.size pri.store.size
 green  open   .kibana_1 kHM1599OT72O-Esb9Mx-bQ   1   1          0            0       566b           283b
