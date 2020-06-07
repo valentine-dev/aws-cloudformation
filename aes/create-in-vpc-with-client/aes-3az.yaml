@@ -1,0 +1,466 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Amazon Elasticsearch Service (AES) domain in VPC 
+  with 3 Availability Zones in Private Subnets + One Client in Public Subnet
+Mappings:
+  SubnetConfig:
+    VPC:
+      CIDR: 10.0.0.0/16
+    PublicOne:
+      CIDR: 10.0.0.0/24
+    PrivateOne:
+      CIDR: 10.0.128.0/24
+    PrivateTwo:
+      CIDR: 10.0.129.0/24
+    PrivateThree:
+      CIDR: 10.0.130.0/24
+  RegionAMI:
+    us-east-1:
+      HVM64x86: ami-0323c3dd2da7fb37d
+    us-east-2:
+      HVM64x86: ami-0f7919c33c90f5b58
+    us-west-1:
+      HVM64x86: ami-06fcc1f0bc2c8943f
+    us-west-2:
+      HVM64x86: ami-0d6621c01e8c2de2c
+    eu-west-1:
+      HVM64x86: ami-06ce3edf0cff21f07
+    eu-west-2:
+      HVM64x86: ami-01a6e31ac994bbc09
+    eu-central-1:
+      HVM64x86: ami-076431be05aaf8080
+    ca-central-1:
+      HVM64x86: ami-054362537f5132ce2
+Outputs:
+  DomainEndpoint:
+    Description: Endpoint of the created AES domain
+    Value: !GetAtt 
+      - ElasticsearchDomain
+      - DomainEndpoint
+    Export:
+      Name: !Sub '${AWS::StackName}-AESDomainEndPoint'
+  DomainArn:
+    Description: ARN of the created AES domain
+    Value: !GetAtt
+      - ElasticsearchDomain
+      - DomainArn
+    Export:
+      Name: !Sub '${AWS::StackName}-AESDomainArn'
+  ClientEC2InstancePublicDNS:
+    Description: Public DNS for Client EC2 instance
+    Value: !GetAtt 
+      - AESClientInstance
+      - PublicDnsName
+Parameters:
+  DomainName:
+    Description: Elasticsearch domain name
+    Type: String
+    AllowedPattern: '[a-z0-9-]{3,28}'
+  ElasticsearchVersion:
+    Description: Elasticsearch version
+    Type: String
+    Default: 7.4
+    AllowedValues:
+      - 7.4
+      - 7.1
+      - 6.8
+      - 6.7
+      - 6.5
+      - 6.4
+      - 6.3
+      - 6.2
+      - 6.0
+      - 5.6
+      - 5.5
+      - 5.3
+      - 5.1  
+  MasterNodeCount:
+    Description: Number of AES master nodes
+    Type: Number
+    Default: 3
+  MasterInstanceType:
+    Description: Instance type of AES master nodes
+    Type: String
+    Default: r5.large.elasticsearch
+    AllowedValues:
+      - c5.large.elasticsearch
+      - c5.xlarge.elasticsearch
+      - c5.2xlarge.elasticsearch
+      - c5.4xlarge.elasticsearch
+      - c5.9xlarge.elasticsearch
+      - c5.18xlarge.elasticsearch
+      - i3.large.elasticsearch
+      - i3.xlarge.elasticsearch
+      - i3.2xlarge.elasticsearch
+      - i3.4xlarge.elasticsearch
+      - i3.8xlarge.elasticsearch
+      - i3.16xlarge.elasticsearch
+      - m5.large.elasticsearch
+      - m5.xlarge.elasticsearch
+      - m5.2xlarge.elasticsearch
+      - m5.4xlarge.elasticsearch
+      - m5.12xlarge.elasticsearch
+      - r5.large.elasticsearch
+      - r5.xlarge.elasticsearch
+      - r5.2xlarge.elasticsearch
+      - r5.4xlarge.elasticsearch
+      - r5.12xlarge.elasticsearch
+      - t2.small.elasticsearch
+      - t2.medium.elasticsearch
+      - c4.large.elasticsearch
+      - c4.xlarge.elasticsearch
+      - c4.2xlarge.elasticsearch
+      - c4.4xlarge.elasticsearch
+      - c4.8xlarge.elasticsearch
+      - i2.xlarge.elasticsearch
+      - i2.2xlarge.elasticsearch
+      - m4.large.elasticsearch
+      - m4.xlarge.elasticsearch
+      - m4.2xlarge.elasticsearch
+      - m4.4xlarge.elasticsearch
+      - m4.10xlarge.elasticsearch
+      - r4.large.elasticsearch
+      - r4.xlarge.elasticsearch
+      - r4.2xlarge.elasticsearch
+      - r4.4xlarge.elasticsearch
+      - r4.8xlarge.elasticsearch
+      - r4.16xlarge.elasticsearch
+      - m3.medium.elasticsearch
+      - m3.large.elasticsearch
+      - m3.xlarge.elasticsearch
+      - m3.2xlarge.elasticsearch
+      - r3.large.elasticsearch
+      - r3.xlarge.elasticsearch
+      - r3.2xlarge.elasticsearch
+      - r3.4xlarge.elasticsearch
+      - r3.8xlarge.elasticsearch
+  DataNodeCount:
+    Description: Number of AES data nodes
+    Type: Number
+    Default: 3
+  DataInstanceType:
+    Description: Instance type of AES data nodes
+    Type: String
+    Default: r5.large.elasticsearch
+    AllowedValues:
+      - c5.large.elasticsearch
+      - c5.xlarge.elasticsearch
+      - c5.2xlarge.elasticsearch
+      - c5.4xlarge.elasticsearch
+      - c5.9xlarge.elasticsearch
+      - c5.18xlarge.elasticsearch
+      - i3.large.elasticsearch
+      - i3.xlarge.elasticsearch
+      - i3.2xlarge.elasticsearch
+      - i3.4xlarge.elasticsearch
+      - i3.8xlarge.elasticsearch
+      - i3.16xlarge.elasticsearch
+      - m5.large.elasticsearch
+      - m5.xlarge.elasticsearch
+      - m5.2xlarge.elasticsearch
+      - m5.4xlarge.elasticsearch
+      - m5.12xlarge.elasticsearch
+      - r5.large.elasticsearch
+      - r5.xlarge.elasticsearch
+      - r5.2xlarge.elasticsearch
+      - r5.4xlarge.elasticsearch
+      - r5.12xlarge.elasticsearch
+      - t2.small.elasticsearch
+      - t2.medium.elasticsearch
+      - c4.large.elasticsearch
+      - c4.xlarge.elasticsearch
+      - c4.2xlarge.elasticsearch
+      - c4.4xlarge.elasticsearch
+      - c4.8xlarge.elasticsearch
+      - i2.xlarge.elasticsearch
+      - i2.2xlarge.elasticsearch
+      - m4.large.elasticsearch
+      - m4.xlarge.elasticsearch
+      - m4.2xlarge.elasticsearch
+      - m4.4xlarge.elasticsearch
+      - m4.10xlarge.elasticsearch
+      - r4.large.elasticsearch
+      - r4.xlarge.elasticsearch
+      - r4.2xlarge.elasticsearch
+      - r4.4xlarge.elasticsearch
+      - r4.8xlarge.elasticsearch
+      - r4.16xlarge.elasticsearch
+      - m3.medium.elasticsearch
+      - m3.large.elasticsearch
+      - m3.xlarge.elasticsearch
+      - m3.2xlarge.elasticsearch
+      - r3.large.elasticsearch
+      - r3.xlarge.elasticsearch
+      - r3.2xlarge.elasticsearch
+      - r3.4xlarge.elasticsearch
+      - r3.8xlarge.elasticsearch
+  EBSVolumeSize:
+    Description: Size (in GiB) of the EBS volume for each data node
+    Type: Number
+    Default: 20
+  KeyName:
+    Default: Valentine_Test
+    Description: >-
+      Name of an existing EC2 KeyPair to enable SSH access to the AES client
+      instances.
+    Type: 'AWS::EC2::KeyPair::KeyName'
+  SSHLocation:
+    Description: The IP address range that can be used to SSH to the EC2 instances
+    Type: String
+    MinLength: 9
+    MaxLength: 18
+    Default: 0.0.0.0/0
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      CidrBlock: !FindInMap 
+        - SubnetConfig
+        - VPC
+        - CIDR
+      Tags:
+        - Key: Name
+          Value: AES-VPC
+  PublicSubnetOne:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select 
+        - 0
+        - !GetAZs 
+          Ref: AWS::Region
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap 
+        - SubnetConfig
+        - PublicOne
+        - CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: AES-Public-Subnet-1
+  PrivateSubnetOne:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select 
+        - 0
+        - !GetAZs 
+          Ref: AWS::Region
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap 
+        - SubnetConfig
+        - PrivateOne
+        - CIDR
+      Tags:
+        - Key: Name
+          Value: AES-Private-Subnet-1
+  PrivateSubnetTwo:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select 
+        - 1
+        - !GetAZs 
+          Ref: AWS::Region
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap 
+        - SubnetConfig
+        - PrivateTwo
+        - CIDR
+      Tags:
+        - Key: Name
+          Value: AES-Private-Subnet-2
+  PrivateSubnetThree:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select 
+        - 2
+        - !GetAZs 
+          Ref: AWS::Region
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap 
+        - SubnetConfig
+        - PrivateThree
+        - CIDR
+      Tags:
+        - Key: Name
+          Value: AES-Private-Subnet-3
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: AES-InternetGateway
+  GatewayAttachement:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: AES-Public-RouteTable
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachement
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  PublicSubnetOneRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetOne
+      RouteTableId: !Ref PublicRouteTable
+  AESSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group of AES
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          SourceSecurityGroupId: !Ref AESClientSecurityGroup
+  AESClientSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group of the AES clients
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SSHLocation
+  AESClientInstance:
+    Properties:
+      ImageId: !FindInMap 
+        - RegionAMI
+        - !Ref 'AWS::Region'
+        - HVM64x86
+      InstanceType: t2.xlarge
+      KeyName: !Ref KeyName
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      NetworkInterfaces:
+        - DeleteOnTermination: 'true'
+          AssociatePublicIpAddress: 'true'
+          DeviceIndex: 0
+          GroupSet:
+            - !Ref AESClientSecurityGroup
+          SubnetId: !Ref PublicSubnetOne
+      Tags:
+        - Key: Name
+          Value: !Join 
+            - '-'
+            - - !Ref VPC
+              - AES-Client
+        - Key: cloud
+          Value: !Ref VPC
+      UserData: !Base64 
+        'Fn::Join':
+          - ''
+          - - |
+              #!/bin/bash
+            - |
+              yum update -y 
+            - |
+              yum install java-1.8.0-openjdk-devel -y
+            - |
+              yum erase awscli -y
+            - |
+              cd /home/ec2-user
+            - |
+              wget https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+            - |
+              unzip awscli-exe-linux-x86_64.zip
+            - |
+              ./aws/install
+            - |
+              mkdir .aws
+            - |
+              echo '[default]' > .aws/config
+            - 'echo ''region = '
+            - !Ref 'AWS::Region'
+            - |
+              ' >> .aws/config
+            - |
+              chown -R ec2-user:ec2-user ./.aws
+            - |
+              echo '#!/bin/bash' > ./show-indices.sh && echo -n 'curl -X GET "https://' >> ./show-indices.sh && cat -n ./describe-aes.json | sed -n 's/.*\"vpc\": //p' | tr -d '"' | tr -d '\n'>> ./show-indices.sh && echo '/_cat/indices?v"' >> ./show-indices.sh
+            - |
+              chmod 755 ./show-indices.sh
+    Type: AWS::EC2::Instance
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
+      Policies:
+        - PolicyName: CreateAESWithFGAC
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - es:*
+                Resource: '*'
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2Role
+  ElasticsearchDomain:
+    Type: AWS::Elasticsearch::Domain
+    Properties:
+      DomainName: !Ref DomainName
+      ElasticsearchVersion: !Ref ElasticsearchVersion
+      NodeToNodeEncryptionOptions:
+        Enabled: true
+      ElasticsearchClusterConfig:
+        DedicatedMasterEnabled: true
+        DedicatedMasterCount: !Ref MasterNodeCount
+        DedicatedMasterType: !Ref MasterInstanceType
+        InstanceCount: !Ref DataNodeCount
+        InstanceType: !Ref DataInstanceType
+        ZoneAwarenessEnabled: true
+        ZoneAwarenessConfig: 
+          AvailabilityZoneCount: 3
+      EBSOptions:
+        EBSEnabled: true
+        VolumeSize: !Ref EBSVolumeSize
+        VolumeType: gp2 
+      SnapshotOptions:
+        AutomatedSnapshotStartHour: 7
+      AdvancedOptions:
+        rest.action.multi.allow_explicit_index: true
+      VPCOptions:
+        SubnetIds:
+          - !Ref PrivateSubnetOne
+          - !Ref PrivateSubnetTwo
+          - !Ref PrivateSubnetThree
+        SecurityGroupIds:
+          - !Ref AESSecurityGroup
+      NodeToNodeEncryptionOptions:
+        Enabled: true
+      EncryptionAtRestOptions:
+        Enabled: true
+      AccessPolicies:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: '*'
+            Action: 'es:*'
+            Resource: '*'
