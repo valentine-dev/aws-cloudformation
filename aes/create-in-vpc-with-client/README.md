@@ -8,12 +8,12 @@
 1. Make sure that there is no stack named **Valentine-Test-AES-Stack** and no AES domain named **valentine-test-aes** in your AWS account and region.
 2. Run `startup.sh` to create a stack to set up the infrastructure with AES domain in it.
 3. Wait until the status of stack **Valentine-Test-AES-Stack** is CREATE_COMPLETE (about 15 minutes).
-4. Run `connect-to-client-instance.sh` to connect to the client instance through SSH (make sure the private key file is in the current directory).
-5. Run `show-indices.sh` to show the current indices of the created AES domain.
-6. Run `aws es describe-elasticsearch-domain --domain-name valentine-test-aes` to get domain configuration information about the created AES domain, including the domain ID, domain endpoint, and domain ARN.
-7. Run `aws es describe-elasticsearch-domain-config --domain-name valentine-test-aes` to get cluster configuration information about the created AES domain, such as the state, creation date, update version, and update date for cluster options.
-9. Run `exit` to disconnect the SSH connection.
-8. Run `cleanup.sh` to delete the stack.
+4. Run `aws es describe-elasticsearch-domain --domain-name valentine-test-aes` to get domain configuration information about the created AES domain, including the domain ID, domain endpoint, and domain ARN.
+5. Run `aws es describe-elasticsearch-domain-config --domain-name valentine-test-aes` to get cluster configuration information about the created AES domain, such as the state, creation date, update version, and update date for cluster options.
+6. Run `connect-to-client-instance.sh` to connect to the client instance through SSH (make sure the private key file is in the current directory).
+7. Run `show-indices.sh` to show the current indices of the created AES domain.
+8. Run `exit` to disconnect the SSH connection.
+9. Run `cleanup.sh` to delete the stack.
 
 # Notes
 1. The private key file used for SSH is **Valentine_Test.pem**. You have to set up your own private key file.
