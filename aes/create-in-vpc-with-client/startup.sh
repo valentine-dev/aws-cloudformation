@@ -2,7 +2,9 @@
 
 aws cloudformation create-stack --stack-name Valentine-Test-AES-Stack --template-body file://aes-3az.yaml --parameters ParameterKey="DomainName",ParameterValue="valentine-test-aes" --capabilities CAPABILITY_IAM
 echo " -- Start creating stack Valentine-Test-AES-Stack ..."
-echo " -- Wait 15 minutes for the stack creation to complete ..."
+echo " -- Wait 16 minutes for the stack creation to complete ..."
+sleep 60 
+echo " -- 15 more minutes ..."
 sleep 60 
 echo " -- 14 more minutes ..."
 sleep 60
