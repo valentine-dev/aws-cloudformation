@@ -11,7 +11,7 @@ Here I use Lambda backed custom resource in CloudFormation to create ElasticSear
 3. `cleanup.sh`: Script to release all the AWS resources.
 4. `connect-to-client-instance.sh`: Script to connect to the client instance through SSH.
 
-# Test
+# Verification
 1. Make sure that there is no stack named **Valentine-Test-AES-FGAC-Stack** and no AES domain named **valentine-test-aes-fgac** in your AWS account and region.
 2. Make sure that AWS CLI is set up at local.
 3. Run `startup.sh` to create a stack to set up the infrastructure with AES domain in it.
