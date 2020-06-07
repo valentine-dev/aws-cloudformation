@@ -376,7 +376,7 @@ Resources:
               mkdir .aws
             - |
               echo '[default]' > .aws/config
-            - 'echo ''region = '
+            - echo 'region=
             - !Ref 'AWS::Region'
             - |
               ' >> .aws/config
