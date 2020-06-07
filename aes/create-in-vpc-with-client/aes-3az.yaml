@@ -389,7 +389,7 @@ Resources:
               ' >> .aws/config
             - |
               chown -R ec2-user:ec2-user ./.aws
-            - aws es describe-elasticsearch-domain --domain-name
+            - aws es describe-elasticsearch-domain --domain-name 
             - !Ref DomainName
             - |
               > ./describe-aes.json
