@@ -15,6 +15,7 @@
 8. Run `show-indices.sh` to show the current indices of the created AES domain, which should look like:
 
     > `health status index     uuid                   pri rep docs.count docs.deleted store.size pri.store.size`
+    
     > `green  open   .kibana_1 kHM1599OT72O-Esb9Mx-bQ   1   1          0            0       566b           283b`
 9. Run `exit` to disconnect the SSH connection.
 10. Run `cleanup.sh` to delete the stack.
