@@ -13,8 +13,8 @@
 6. Run `aws es describe-elasticsearch-domain-config --domain-name valentine-test-aes` to get cluster configuration information about the created AES domain, such as the state, creation date, update version, and update date for cluster options.
 7. Run `connect-to-client-instance.sh` to connect to the client instance through SSH (make sure the private key file is in the current directory).
 8. Run `show-indices.sh` to show the current indices of the created AES domain, which should look like:
-    health status index     uuid                   pri rep docs.count docs.deleted store.size pri.store.size
-    green  open   .kibana_1 kHM1599OT72O-Esb9Mx-bQ   1   1          0            0       566b           283b
+    > health status index     uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+    > green  open   .kibana_1 kHM1599OT72O-Esb9Mx-bQ   1   1          0            0       566b           283b
 9. Run `exit` to disconnect the SSH connection.
 10. Run `cleanup.sh` to delete the stack.
 
