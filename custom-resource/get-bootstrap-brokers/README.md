@@ -18,10 +18,10 @@ Once the Lambda is invoked successfully and has returned the value “brokers”
 Be sure to have permissions to run AWS CLI to access AWS resources like AWS Lambda and Amazon MSK.
 
 1. Set up AWS CLI at local.
-2. Run start_up_json.sh or start_up_yaml.sh to creat the stack (make sure that the stack name and cluster name are unqiue in the region and account).
-3. Go to the AWS Management Console to check that the MSK Cluster named in the start_up.sh is ready.
+2. Run startup-json.sh or startup-yaml.sh to creat the stack (make sure that the stack name and cluster name are unqiue in the region and account).
+3. Go to the AWS Management Console to check that the MSK Cluster named in the startup-json.sh or startup-yaml.sh is ready.
 4. Compare the Bootstrap Brokers string from the output of the created MSK Cluster on CloudFormation Stacks console with the client information from that on Amazon MSK console - they should be the same.
-5. Run clean_up.sh to delete the stack.
+5. Run cleanup.sh to delete the stack.
 
 [1]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-msk-cluster.html
 [2]: https://docs.aws.amazon.com/msk/1.0/apireference/clusters-clusterarn-bootstrap-brokers.html
