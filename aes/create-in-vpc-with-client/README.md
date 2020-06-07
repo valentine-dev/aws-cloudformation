@@ -12,5 +12,5 @@
 5. Run `show-indices.sh` to show the current indices of the created AES domain.
 6. Run `aws es describe-elasticsearch-domain --domain-name valentine-test-aes` to get domain configuration information about the created AES domain, including the domain ID, domain endpoint, and domain ARN.
 7. Run `aws es describe-elasticsearch-domain-config --domain-name valentine-test-aes` to get cluster configuration information about the created AES domain, such as the state, creation date, update version, and update date for cluster options.
-9. Run `exit` tp disconnect the SSH connection.
+9. Run `exit` to disconnect the SSH connection.
 8. Run `cleanup.sh` to delete the stack.
