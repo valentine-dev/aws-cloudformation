@@ -412,7 +412,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
       Policies:
-        - PolicyName: CreateAESWithFGAC
+        - PolicyName: AESClient
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -425,46 +425,128 @@ Resources:
     Properties:
       Roles:
         - !Ref EC2Role
-  ElasticsearchDomain:
-    Type: AWS::Elasticsearch::Domain
+  CustomElasticsearchDomain:
+    Type: Custom::ElasticsearchDomain
     Properties:
-      DomainName: !Ref DomainName
-      ElasticsearchVersion: !Ref ElasticsearchVersion
-      NodeToNodeEncryptionOptions:
-        Enabled: true
-      ElasticsearchClusterConfig:
-        DedicatedMasterEnabled: true
-        DedicatedMasterCount: !Ref MasterNodeCount
-        DedicatedMasterType: !Ref MasterInstanceType
-        InstanceCount: !Ref DataNodeCount
-        InstanceType: !Ref DataInstanceType
-        ZoneAwarenessEnabled: true
-        ZoneAwarenessConfig: 
-          AvailabilityZoneCount: 3
-      EBSOptions:
-        EBSEnabled: true
-        VolumeSize: !Ref EBSVolumeSize
-        VolumeType: gp2 
-      SnapshotOptions:
-        AutomatedSnapshotStartHour: 7
-      AdvancedOptions:
-        rest.action.multi.allow_explicit_index: true
-      VPCOptions:
-        SubnetIds:
+      ServiceToken: !GetAtt 
+        - CustomElasticsearchDomainFunction
+        - Arn
+      domainName: !Ref DomainName
+      elasticsearchVersion: !Ref ElasticsearchVersion
+      masterNodeCount: !Ref MasterNodeCount
+      masterInstanceType: !Ref MasterInstanceType
+      dataNodeCount: !Ref DataNodeCount
+      dataInstanceType: !Ref DataInstanceType
+      ebsVolumeSize: !Ref EBSVolumeSize
+      subnetIds:
           - !Ref PrivateSubnetOne
           - !Ref PrivateSubnetTwo
           - !Ref PrivateSubnetThree
-        SecurityGroupIds:
+      securityGroupIds:
           - !Ref AESSecurityGroup
-      NodeToNodeEncryptionOptions:
-        Enabled: true
-      EncryptionAtRestOptions:
-        Enabled: true
-      AccessPolicies:
+  CustomElasticsearchDomainFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt 
+        - LambdaExecutionRole
+        - Arn
+      Code:
+        ZipFile: |
+          const aws = require('aws-sdk')
+          const es = new aws.ES();
+          const response = require('cfn-response')
+          exports.handler = (event, context) => {
+            // For Delete requests, immediately send a SUCCESS response.
+            if (event.RequestType == "Delete") {
+              response.send(event, context, "SUCCESS")
+              return
+            }
+            let responseStatus = "FAILED"
+            let responseData = {}
+            const params = {
+              DomainName: event.ResourceProperties.domainName,
+              AccessPolicies: '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":"*"},"Action":"es:*","Resource":"*"}]}',
+              AdvancedOptions: { "rest.action.multi.allow_explicit_index": "true" },
+              AdvancedSecurityOptions: {
+                Enabled: true,
+                InternalUserDatabaseEnabled: true,
+                MasterUserOptions: {
+                    MasterUserName: 'admin_',
+                    MasterUserPassword: 'Enjoyit2020$'
+                }
+              },
+              DomainEndpointOptions: {
+                EnforceHTTPS: true,
+                TLSSecurityPolicy: "Policy-Min-TLS-1-2-2019-07"
+              },
+              EBSOptions: {
+                EBSEnabled: true,
+                VolumeSize: event.ResourceProperties.ebsVolumeSize,
+                VolumeType: "gp2"
+              },
+              ElasticsearchClusterConfig: {
+                DedicatedMasterCount: event.ResourceProperties.masterNodeCount,
+                DedicatedMasterEnabled: true,
+                DedicatedMasterType: event.ResourceProperties.masterInstanceType,
+                InstanceCount: event.ResourceProperties.dataNodeCount,
+                InstanceType: event.ResourceProperties.dataInstanceType,
+                ZoneAwarenessConfig: {
+                  AvailabilityZoneCount: '3'
+                },
+                ZoneAwarenessEnabled: true
+              },
+              ElasticsearchVersion: event.ResourceProperties.elasticsearchVersion,
+              EncryptionAtRestOptions: {
+                Enabled: true
+              },
+              NodeToNodeEncryptionOptions: {
+                Enabled: true
+              },
+              SnapshotOptions: {
+                AutomatedSnapshotStartHour: '7'
+              },
+              VPCOptions: {
+                SecurityGroupIds: event.ResourceProperties.securityGroupIds,
+                SubnetIds: event.ResourceProperties.subnetIds
+              }
+            };
+            es.createElasticsearchDomain(params, function(err, data) {
+                if (err) {
+                  responseData = {Error: "es.createElasticsearchDomain call failed"}
+                  console.log(responseData.Error + ":\n", err) // an error occurred
+                } else {
+                  responseStatus = "SUCCESS"
+                  responseData = {DomainEndpoint: data.DomainStatus.Endpoints.vpc }
+                  console.log(responseData)           // successful response
+                }
+                response.send(event, context, responseStatus, responseData)
+            })
+          }
+      Runtime: nodejs12.x
+      Timeout: 900
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
             Principal:
-              AWS: '*'
-            Action: 'es:*'
-            Resource: '*'
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSLambdaExecute
+      Policies:
+        - PolicyName: CreateAESWithFGAC
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - 'es:*'
+                  - 'kms:List*'
+                  - 'kms:Describe*'
+                Resource: '*'
