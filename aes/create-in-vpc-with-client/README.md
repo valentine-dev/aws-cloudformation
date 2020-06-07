@@ -5,7 +5,7 @@
 4. `connect-to-client-instance.sh`: Script to connect to the client instance through SSH.
 
 # Test
-1. Make sure that there is no stack named "Valentine-Test-AES-Stack" and no AES domain named "valentine-test-aes" in your AWS account and region.
+1. Make sure that there is no stack named **Valentine-Test-AES-Stack** and no AES domain named **valentine-test-aes** in your AWS account and region.
 2. Run `startup.sh` to create a stack to set up the infrastructure with AES domain in it.
 3. Wait until the status of stack **Valentine-Test-AES-Stack** is CREATE_COMPLETE (about 15 minutes).
 4. Run `connect-to-client-instance.sh` to connect to the client instance through SSH.
