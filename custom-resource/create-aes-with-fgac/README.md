@@ -33,5 +33,5 @@ green  open   .kibana_1 kHM1599OT72O-Esb9Mx-bQ   1   1          0            0  
 3. AES domain name **valentine-test-ae-fgacs** is used in the `startup.sh`, step 6 and 7. You can use other names.
 
 # Limitation
-1. Since the maximum timeout of the lambda function is 15 minutes, the duration of the AES domain creation has to be within 14 minutes for the custom resource to return the endpoint.
+1. Since the maximum timeout of the lambda function is 15 minutes, the duration of the AES domain creation has to be within 14 minutes for the custom resource to return the endpoint (you don't have to get the endpoint so that you don't have to wait for the creation to be completed).
 
