@@ -431,19 +431,19 @@ Resources:
         - CustomElasticsearchDomainFunction
         - Arn
       domainName: !Ref DomainName
-      elasticsearchVersion: !Ref ElasticsearchVersion
-      masterNodeCount: !Ref MasterNodeCount
-      masterInstanceType: !Ref MasterInstanceType
-      dataNodeCount: !Ref DataNodeCount
-      dataInstanceType: !Ref DataInstanceType
-      ebsVolumeSize: !Ref EBSVolumeSize
-      masterUserName: !Ref MasterUserName
-      masterUserPassword: !Ref MasterUserPassword
+      version: !Ref ElasticsearchVersion
+      mNodeCount: !Ref MasterNodeCount
+      mInstanceType: !Ref MasterInstanceType
+      dNodeCount: !Ref DataNodeCount
+      dInstanceType: !Ref DataInstanceType
+      ebsVolSize: !Ref EBSVolumeSize
+      mUserName: !Ref MasterUserName
+      mUserPassword: !Ref MasterUserPassword
       subnetIds:
           - !Ref PrivateSubnetOne
           - !Ref PrivateSubnetTwo
           - !Ref PrivateSubnetThree
-      securityGroupIds:
+      sGroupIds:
           - !Ref AESSecurityGroup
   CustomElasticsearchDomainFunction:
     Type: AWS::Lambda::Function
@@ -454,27 +454,42 @@ Resources:
         - Arn
       Code:
         ZipFile: |
-          const aws = require('aws-sdk')
-          const es = new aws.ES();
-          const response = require('cfn-response')
-          exports.handler = (event, context) => {
-            // For Delete requests, immediately send a SUCCESS response.
-            if (event.RequestType == "Delete") {
-              response.send(event, context, "SUCCESS")
+          aws = require('aws-sdk')
+          es = new aws.ES()
+          resp = require('cfn-response')
+          exports.handler = (evt, context) => {
+            domainName = evt.ResourceProperties.domainName
+            rStatus = 'FAILED'
+            rData = {}
+            if (evt.RequestType == 'Delete') {
+              dParams = { DomainName: domainName }
+              es.deleteElasticsearchDomain(dParams, function(err, data) {
+                  if (err) {
+                    rData = {Error: "Delete fail"}
+                    console.log(rData.Error + ":\n", err)
+                    resp.send(evt, context, rStatus, rData)
+                  } else {
+                    date = Date.now()
+                    cDate = null
+                    do {
+                      cDate = Date.now()
+                    } while (cDate - date < 600000)
+                    resp.send(evt, context, "SUCCESS")
+                  }     
+              })
               return
             }
-            let responseStatus = "FAILED"
-            let responseData = {}
-            const params = {
-              DomainName: event.ResourceProperties.domainName,
+            
+            let params = {
+              DomainName: domainName,
               AccessPolicies: '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":"*"},"Action":"es:*","Resource":"*"}]}',
               AdvancedOptions: { "rest.action.multi.allow_explicit_index": "true" },
               AdvancedSecurityOptions: {
                 Enabled: true,
                 InternalUserDatabaseEnabled: true,
                 MasterUserOptions: {
-                    MasterUserName: event.ResourceProperties.masterUserName,
-                    MasterUserPassword: event.ResourceProperties.masterUserPassword
+                    MasterUserName: evt.ResourceProperties.mUserName,
+                    MasterUserPassword: evt.ResourceProperties.mUserPassword
                 }
               },
               DomainEndpointOptions: {
@@ -483,64 +498,49 @@ Resources:
               },
               EBSOptions: {
                 EBSEnabled: true,
-                VolumeSize: event.ResourceProperties.ebsVolumeSize,
+                VolumeSize: evt.ResourceProperties.ebsVolSize,
                 VolumeType: "gp2"
               },
               ElasticsearchClusterConfig: {
-                DedicatedMasterCount: event.ResourceProperties.masterNodeCount,
+                DedicatedMasterCount: evt.ResourceProperties.mNodeCount,
                 DedicatedMasterEnabled: true,
-                DedicatedMasterType: event.ResourceProperties.masterInstanceType,
-                InstanceCount: event.ResourceProperties.dataNodeCount,
-                InstanceType: event.ResourceProperties.dataInstanceType,
-                ZoneAwarenessConfig: {
-                  AvailabilityZoneCount: '3'
-                },
+                DedicatedMasterType: evt.ResourceProperties.mInstanceType,
+                InstanceCount: evt.ResourceProperties.dNodeCount,
+                InstanceType: evt.ResourceProperties.dInstanceType,
+                ZoneAwarenessConfig: {AvailabilityZoneCount: '3'},
                 ZoneAwarenessEnabled: true
               },
-              ElasticsearchVersion: event.ResourceProperties.elasticsearchVersion,
-              EncryptionAtRestOptions: {
-                Enabled: true
-              },
-              NodeToNodeEncryptionOptions: {
-                Enabled: true
-              },
-              SnapshotOptions: {
-                AutomatedSnapshotStartHour: '7'
-              },
+              ElasticsearchVersion: evt.ResourceProperties.version,
+              EncryptionAtRestOptions: {Enabled: true},
+              NodeToNodeEncryptionOptions: {Enabled: true},
+              SnapshotOptions: {AutomatedSnapshotStartHour: '7'},
               VPCOptions: {
-                SecurityGroupIds: event.ResourceProperties.securityGroupIds,
-                SubnetIds: event.ResourceProperties.subnetIds
+                SecurityGroupIds: evt.ResourceProperties.sGroupIds,
+                SubnetIds: evt.ResourceProperties.subnetIds
               }
             };
             es.createElasticsearchDomain(params, function(err, data) {
                 if (err) {
-                  responseData = {Error: "es.createElasticsearchDomain call failed"}
-                  console.log(responseData.Error + ":\n", err)
-                  response.send(event, context, responseStatus, responseData)
+                  rData = {Error: "create fail"}
+                  resp.send(evt, context, rStatus, rData)
                 } else {
-                  console.log("es.createElasticsearchDomain call succeeded - RESPONSE: \n" + data)
-                  const date = Date.now()
-                  let currentDate = null
+                  date = Date.now()
+                  cDate = null
                   do {
-                    currentDate = Date.now()
-                  } while (currentDate - date < 840000) // blocking to wait for 14 minutes
-                  const describeParams = { DomainName: event.ResourceProperties.domainName }
-                  es.describeElasticsearchDomain(describeParams, function(describeErr, describeData) {
-                    if (describeErr) {
-                      responseData = {Error: "es.describeElasticsearchDomain call failed"}
-                      console.log(responseData.Error + ":\n", err)
-                      response.send(event, context, responseStatus, responseData)
+                    cDate = Date.now()
+                  } while (cDate - date < 840000)
+                  const dParams = { DomainName: domainName }
+                  es.describeElasticsearchDomain(dParams, function(dErr, dData) {
+                    if (dErr) {
+                      rData = {Error: "describe fail"}
+                      resp.send(evt, context, rStatus, rData)
                     } else {
                       if (!describeData.DomainStatus.Processing) {
-                        responseStatus = "SUCCESS"
-                        let endpoint = describeData['DomainStatus']['Endpoints']['vpc']
-                        console.log("Endpoint: " + endpoint + ":\n")
-                        responseData = {DomainEndpoint: endpoint}
-                      } else {
-                        responseData = {Error: "Elasticsearch domain creation is not completed"}
-                        console.log(responseData.Error + ":\n", err)
-                      }
-                      response.send(event, context, responseStatus, responseData)
+                        rStatus = "SUCCESS"
+                        endpoint = dData['DomainStatus']['Endpoints']['vpc']
+                        rData = {DomainEndpoint: endpoint}
+                      } 
+                      resp.send(evt, context, rStatus, rData)
                     }
                   })
                 }                
