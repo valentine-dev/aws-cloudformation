@@ -27,6 +27,7 @@ green  open   .kibana_1            oGZgWvoUR6SnDVCcqPT2UQ   1   1          0    
 ```
 9. Run `exit` to disconnect the SSH connection.
 10. Run `cleanup.sh` to delete the stack.
+11. Verify that AES domain **valentine-test-aes-fgac** is deleted as well.
 
 # Notes
 1. The private key file used for SSH is **Valentine_Test.pem**. You have to set up your own private key file.
