@@ -67,6 +67,14 @@ Parameters:
       - 5.5
       - 5.3
       - 5.1  
+  MasterUserName:
+    Description: Master user name for Kibana
+    Type: String
+    Default: admin_
+  MasterUserPassword:
+    Description: Master user password for Kibana
+    Type: String
+    Default: Enjoyit2020$
   MasterNodeCount:
     Description: Number of AES master nodes
     Type: Number
@@ -383,7 +391,7 @@ Resources:
             - |
               chown -R ec2-user:ec2-user ./.aws
             - echo '#!/bin/bash' > ./show-indices.sh && echo -n 'curl -X GET "https://' >> ./show-indices.sh && echo -n '
-            - !GetAtt 'ElasticsearchDomain.DomainEndpoint'
+            - !GetAtt 'CustomElasticsearchDomain.DomainEndpoint'
             - |
               ' >> ./show-indices.sh && echo '/_cat/indices?v"' >> ./show-indices.sh
             - |
@@ -429,6 +437,8 @@ Resources:
       dataNodeCount: !Ref DataNodeCount
       dataInstanceType: !Ref DataInstanceType
       ebsVolumeSize: !Ref EBSVolumeSize
+      masterUserName: !Ref MasterUserName
+      masterUserPassword: !Ref MasterUserPassword
       subnetIds:
           - !Ref PrivateSubnetOne
           - !Ref PrivateSubnetTwo
@@ -463,8 +473,8 @@ Resources:
                 Enabled: true,
                 InternalUserDatabaseEnabled: true,
                 MasterUserOptions: {
-                    MasterUserName: 'admin_',
-                    MasterUserPassword: 'Enjoyit2020$'
+                    MasterUserName: event.ResourceProperties.masterUserName,
+                    MasterUserPassword: event.ResourceProperties.masterUserPassword
                 }
               },
               DomainEndpointOptions: {
