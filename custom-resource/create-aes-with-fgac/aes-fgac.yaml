@@ -535,7 +535,7 @@ Resources:
                       rData = {Error: "describe fail"}
                       resp.send(evt, context, rStatus, rData)
                     } else {
-                      if (!describeData.DomainStatus.Processing) {
+                      if (!dData.DomainStatus.Processing) {
                         rStatus = "SUCCESS"
                         endpoint = dData['DomainStatus']['Endpoints']['vpc']
                         rData = {DomainEndpoint: endpoint}
