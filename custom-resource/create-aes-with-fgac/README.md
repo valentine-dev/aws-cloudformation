@@ -36,4 +36,4 @@ green  open   .kibana_1            oGZgWvoUR6SnDVCcqPT2UQ   1   1          0    
 
 # Limitation
 1. Since the maximum timeout of the lambda function is 15 minutes, the duration of the AES domain creation has to be within 14 minutes for the custom resource to return the endpoint (you don't have to get the endpoint so that you don't have to wait for the creation to be completed).
-
+2. The Update event is NOT supported in the AWS CloudFormation custom resource, in which case SUCCESS is passed for simplicity.
