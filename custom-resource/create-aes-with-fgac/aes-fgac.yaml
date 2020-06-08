@@ -390,10 +390,14 @@ Resources:
               ' >> .aws/config
             - |
               chown -R ec2-user:ec2-user ./.aws
-            - echo '#!/bin/bash' > ./show-indices.sh && echo -n 'curl -X GET "https://' >> ./show-indices.sh && echo -n '
+            - echo '#!/bin/bash' > ./show-indices.sh && echo -n 'curl -X GET "https://
             - !GetAtt 'CustomElasticsearchDomain.DomainEndpoint'
+            - /_cat/indices?v" -u ' >> ./show-indices.sh && echo -n '
+            - !Ref 'MasterUserName' 
+            - :' >> ./show-indices.sh && echo -n '
+            - !Ref 'MasterUserPassword'
             - |
-              ' >> ./show-indices.sh && echo '/_cat/indices?v"' >> ./show-indices.sh
+              ' >> ./show-indices.sh
             - |
               chmod 755 ./show-indices.sh
     Type: AWS::EC2::Instance
@@ -430,15 +434,15 @@ Resources:
       ServiceToken: !GetAtt 
         - CustomElasticsearchDomainFunction
         - Arn
-      domainName: !Ref DomainName
+      dName: !Ref DomainName
       version: !Ref ElasticsearchVersion
-      mNodeCount: !Ref MasterNodeCount
+      mNodeCnt: !Ref MasterNodeCount
       mInstanceType: !Ref MasterInstanceType
-      dNodeCount: !Ref DataNodeCount
+      dNodeCnt: !Ref DataNodeCount
       dInstanceType: !Ref DataInstanceType
       ebsVolSize: !Ref EBSVolumeSize
       mUserName: !Ref MasterUserName
-      mUserPassword: !Ref MasterUserPassword
+      mUserPwd: !Ref MasterUserPassword
       subnetIds:
           - !Ref PrivateSubnetOne
           - !Ref PrivateSubnetTwo
@@ -457,31 +461,35 @@ Resources:
           aws = require('aws-sdk')
           es = new aws.ES()
           resp = require('cfn-response')
-          exports.handler = (evt, context) => {
-            domainName = evt.ResourceProperties.domainName
+          exports.handler = (evt, cxt) => {
+            dName = evt.ResourceProperties.dName
             rStatus = 'FAILED'
             rData = {}
+            if (evt.RequestType == 'Update') {
+              resp.send(evt, cxt, "SUCCESS")
+              return
+            }
             if (evt.RequestType == 'Delete') {
-              dParams = { DomainName: domainName }
+              dParams = { DomainName: dName }
               es.deleteElasticsearchDomain(dParams, function(err, data) {
                   if (err) {
                     rData = {Error: "Delete fail"}
                     console.log(rData.Error + ":\n", err)
-                    resp.send(evt, context, rStatus, rData)
+                    resp.send(evt, cxt, rStatus, rData)
                   } else {
-                    date = Date.now()
-                    cDate = null
+                    d = Date.now()
+                    cD = null
                     do {
-                      cDate = Date.now()
-                    } while (cDate - date < 600000)
-                    resp.send(evt, context, "SUCCESS")
+                      cD = Date.now()
+                    } while (cD - d < 600000)
+                    resp.send(evt, cxt, "SUCCESS")
                   }     
               })
               return
             }
             
             let params = {
-              DomainName: domainName,
+              DomainName: dName,
               AccessPolicies: '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":"*"},"Action":"es:*","Resource":"*"}]}',
               AdvancedOptions: { "rest.action.multi.allow_explicit_index": "true" },
               AdvancedSecurityOptions: {
@@ -489,7 +497,7 @@ Resources:
                 InternalUserDatabaseEnabled: true,
                 MasterUserOptions: {
                     MasterUserName: evt.ResourceProperties.mUserName,
-                    MasterUserPassword: evt.ResourceProperties.mUserPassword
+                    MasterUserPassword: evt.ResourceProperties.mUserPwd
                 }
               },
               DomainEndpointOptions: {
@@ -502,10 +510,10 @@ Resources:
                 VolumeType: "gp2"
               },
               ElasticsearchClusterConfig: {
-                DedicatedMasterCount: evt.ResourceProperties.mNodeCount,
+                DedicatedMasterCount: evt.ResourceProperties.mNodeCnt,
                 DedicatedMasterEnabled: true,
                 DedicatedMasterType: evt.ResourceProperties.mInstanceType,
-                InstanceCount: evt.ResourceProperties.dNodeCount,
+                InstanceCount: evt.ResourceProperties.dNodeCnt,
                 InstanceType: evt.ResourceProperties.dInstanceType,
                 ZoneAwarenessConfig: {AvailabilityZoneCount: '3'},
                 ZoneAwarenessEnabled: true
@@ -522,25 +530,24 @@ Resources:
             es.createElasticsearchDomain(params, function(err, data) {
                 if (err) {
                   rData = {Error: "create fail"}
-                  resp.send(evt, context, rStatus, rData)
+                  resp.send(evt, cxt, rStatus, rData)
                 } else {
-                  date = Date.now()
-                  cDate = null
+                  d = Date.now()
+                  cD = null
                   do {
-                    cDate = Date.now()
-                  } while (cDate - date < 840000)
-                  const dParams = { DomainName: domainName }
+                    cD = Date.now()
+                  } while (cD - d < 840000)
+                  const dParams = { DomainName: dName }
                   es.describeElasticsearchDomain(dParams, function(dErr, dData) {
                     if (dErr) {
                       rData = {Error: "describe fail"}
-                      resp.send(evt, context, rStatus, rData)
+                      resp.send(evt, cxt, rStatus, rData)
                     } else {
                       if (!dData.DomainStatus.Processing) {
                         rStatus = "SUCCESS"
-                        endpoint = dData['DomainStatus']['Endpoints']['vpc']
-                        rData = {DomainEndpoint: endpoint}
+                        rData = {DomainEndpoint: dData['DomainStatus']['Endpoints']['vpc']}
                       } 
-                      resp.send(evt, context, rStatus, rData)
+                      resp.send(evt, cxt, rStatus, rData)
                     }
                   })
                 }                
