@@ -21,8 +21,9 @@ Here I use Lambda backed custom resource in CloudFormation to create ElasticSear
 7. Run `connect-to-client-instance.sh` to connect to the client instance through SSH (make sure the private key file is in the current directory).
 8. Run `show-indices.sh` to show the current indices of the created AES domain, and verify that the output should look like:
 ```
-health status index     uuid                   pri rep docs.count docs.deleted store.size pri.store.size
-green  open   .kibana_1 kHM1599OT72O-Esb9Mx-bQ   1   1          0            0       566b           283b
+health status index                uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   .opendistro_security MPTQOVGnTTyOPt3pwvtToQ   1   2          7            4    128.8kb         34.4kb
+green  open   .kibana_1            oGZgWvoUR6SnDVCcqPT2UQ   1   1          0            0       566b           283b
 ```
 9. Run `exit` to disconnect the SSH connection.
 10. Run `cleanup.sh` to delete the stack.
