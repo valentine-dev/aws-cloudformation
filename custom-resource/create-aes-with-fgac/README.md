@@ -32,7 +32,7 @@ green  open   .kibana_1            oGZgWvoUR6SnDVCcqPT2UQ   1   1          0    
 # Notes
 1. The private key file used for SSH is **Valentine_Test.pem**. You have to set up your own private key file.
 2. Stack name **Valentine-Test-AES-FGAC-Stack** is used in the `startup.sh`. You can use other names.
-3. AES domain name **valentine-test-ae-fgacs** is used in the `startup.sh`, step 6 and 7. You can use other names.
+3. AES domain name **valentine-test-ae-fgac** is used in the `startup.sh`, step 6 and 7. You can use other names.
 
 # Limitation
 1. Since the maximum timeout of the lambda function is 15 minutes, the duration of the AES domain creation has to be within 14 minutes for the custom resource to return the endpoint (you don't have to get the endpoint so that you don't have to wait for the creation to be completed).
