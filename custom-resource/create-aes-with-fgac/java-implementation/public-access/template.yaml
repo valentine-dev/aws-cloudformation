@@ -1,0 +1,216 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Amazon Elasticsearch Service (AES) with fine-grained access control (FGAC) in public
+Outputs:
+  DomainEndpoint:
+    Description: Endpoint of the created AES domain
+    Value: !GetAtt 
+      - CustomElasticsearchDomain
+      - DomainEndpoint
+    Export:
+      Name: !Sub '${AWS::StackName}-AESDomainEndPoint'
+Parameters:
+  AvailabilityZoneCount:
+    Description: Number of availability zones
+    Type: Number
+    Default: 3
+  DomainName:
+    Description: Elasticsearch domain name
+    Type: String
+    AllowedPattern: '[a-z][a-z0-9-]{2,27}'
+  ElasticsearchVersion:
+    Description: Elasticsearch version
+    Type: String
+    Default: 7.4
+    AllowedValues:
+      - 7.4
+      - 7.1
+      - 6.8
+      - 6.7
+  MasterUserName:
+    Description: Master user name for Kibana
+    Type: String
+    Default: admin_
+  MasterUserPassword:
+    Description: Master user password for Kibana
+    Type: String
+    Default: Enjoyit2020$
+  MasterNodeCount:
+    Description: Number of AES master nodes
+    Type: Number
+    Default: 3
+  MasterInstanceType:
+    Description: Instance type of AES master nodes
+    Type: String
+    Default: r5.large.elasticsearch
+    AllowedValues:
+      - c5.large.elasticsearch
+      - c5.xlarge.elasticsearch
+      - c5.2xlarge.elasticsearch
+      - c5.4xlarge.elasticsearch
+      - c5.9xlarge.elasticsearch
+      - c5.18xlarge.elasticsearch
+      - i3.large.elasticsearch
+      - i3.xlarge.elasticsearch
+      - i3.2xlarge.elasticsearch
+      - i3.4xlarge.elasticsearch
+      - i3.8xlarge.elasticsearch
+      - i3.16xlarge.elasticsearch
+      - m5.large.elasticsearch
+      - m5.xlarge.elasticsearch
+      - m5.2xlarge.elasticsearch
+      - m5.4xlarge.elasticsearch
+      - m5.12xlarge.elasticsearch
+      - r5.large.elasticsearch
+      - r5.xlarge.elasticsearch
+      - r5.2xlarge.elasticsearch
+      - r5.4xlarge.elasticsearch
+      - r5.12xlarge.elasticsearch
+      - t2.small.elasticsearch
+      - t2.medium.elasticsearch
+      - c4.large.elasticsearch
+      - c4.xlarge.elasticsearch
+      - c4.2xlarge.elasticsearch
+      - c4.4xlarge.elasticsearch
+      - c4.8xlarge.elasticsearch
+      - i2.xlarge.elasticsearch
+      - i2.2xlarge.elasticsearch
+      - m4.large.elasticsearch
+      - m4.xlarge.elasticsearch
+      - m4.2xlarge.elasticsearch
+      - m4.4xlarge.elasticsearch
+      - m4.10xlarge.elasticsearch
+      - r4.large.elasticsearch
+      - r4.xlarge.elasticsearch
+      - r4.2xlarge.elasticsearch
+      - r4.4xlarge.elasticsearch
+      - r4.8xlarge.elasticsearch
+      - r4.16xlarge.elasticsearch
+      - m3.medium.elasticsearch
+      - m3.large.elasticsearch
+      - m3.xlarge.elasticsearch
+      - m3.2xlarge.elasticsearch
+      - r3.large.elasticsearch
+      - r3.xlarge.elasticsearch
+      - r3.2xlarge.elasticsearch
+      - r3.4xlarge.elasticsearch
+      - r3.8xlarge.elasticsearch
+  DataNodeCount:
+    Description: Number of AES data nodes
+    Type: Number
+    Default: 3
+  DataInstanceType:
+    Description: Instance type of AES data nodes
+    Type: String
+    Default: r5.large.elasticsearch
+    AllowedValues:
+      - c5.large.elasticsearch
+      - c5.xlarge.elasticsearch
+      - c5.2xlarge.elasticsearch
+      - c5.4xlarge.elasticsearch
+      - c5.9xlarge.elasticsearch
+      - c5.18xlarge.elasticsearch
+      - i3.large.elasticsearch
+      - i3.xlarge.elasticsearch
+      - i3.2xlarge.elasticsearch
+      - i3.4xlarge.elasticsearch
+      - i3.8xlarge.elasticsearch
+      - i3.16xlarge.elasticsearch
+      - m5.large.elasticsearch
+      - m5.xlarge.elasticsearch
+      - m5.2xlarge.elasticsearch
+      - m5.4xlarge.elasticsearch
+      - m5.12xlarge.elasticsearch
+      - r5.large.elasticsearch
+      - r5.xlarge.elasticsearch
+      - r5.2xlarge.elasticsearch
+      - r5.4xlarge.elasticsearch
+      - r5.12xlarge.elasticsearch
+      - t2.small.elasticsearch
+      - t2.medium.elasticsearch
+      - c4.large.elasticsearch
+      - c4.xlarge.elasticsearch
+      - c4.2xlarge.elasticsearch
+      - c4.4xlarge.elasticsearch
+      - c4.8xlarge.elasticsearch
+      - i2.xlarge.elasticsearch
+      - i2.2xlarge.elasticsearch
+      - m4.large.elasticsearch
+      - m4.xlarge.elasticsearch
+      - m4.2xlarge.elasticsearch
+      - m4.4xlarge.elasticsearch
+      - m4.10xlarge.elasticsearch
+      - r4.large.elasticsearch
+      - r4.xlarge.elasticsearch
+      - r4.2xlarge.elasticsearch
+      - r4.4xlarge.elasticsearch
+      - r4.8xlarge.elasticsearch
+      - r4.16xlarge.elasticsearch
+      - m3.medium.elasticsearch
+      - m3.large.elasticsearch
+      - m3.xlarge.elasticsearch
+      - m3.2xlarge.elasticsearch
+      - r3.large.elasticsearch
+      - r3.xlarge.elasticsearch
+      - r3.2xlarge.elasticsearch
+      - r3.4xlarge.elasticsearch
+      - r3.8xlarge.elasticsearch
+  EBSVolumeSize:
+    Description: Size (in GiB) of the EBS volume for each data node
+    Type: Number
+    Default: 20
+Resources:
+  CustomElasticsearchDomain:
+    Type: Custom::ElasticsearchDomain
+    Properties:
+      ServiceToken: !GetAtt 
+        - CustomElasticsearchDomainFunction
+        - Arn
+      domainName: !Ref DomainName
+      elasticsearchVersion: !Ref ElasticsearchVersion
+      masterNodeCount: !Ref MasterNodeCount
+      masterInstanceType: !Ref MasterInstanceType
+      dataNodeCount: !Ref DataNodeCount
+      dataInstanceType: !Ref DataInstanceType
+      ebsVolumeSize: !Ref EBSVolumeSize
+      masterUserName: !Ref MasterUserName
+      masterUserPassword: !Ref MasterUserPassword
+      availabilityZoneCount: !Ref AvailabilityZoneCount
+  CustomElasticsearchDomainFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: com.calabrio.aws.lambda.function.ElasticsearchPublicWithFGAC
+      Role: !GetAtt 
+        - LambdaExecutionRole
+        - Arn
+      Code:
+        S3Bucket: dev-valentine
+        S3Key: ElasticsearchPublicFineGrainedAccess-1.0.zip
+      Runtime: java8
+      Timeout: 900
+      MemorySize: 512
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSLambdaExecute
+      Policies:
+        - PolicyName: CreateAESWithFGAC
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - 'es:*'
+                  - 'kms:List*'
+                  - 'kms:Describe*'
+                Resource: '*'
