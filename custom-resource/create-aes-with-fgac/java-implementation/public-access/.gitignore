@@ -1,0 +1,13 @@
+bin/
+build/
+
+.gradle
+*.lock
+
+.DS_Store
+
+
+
+.classpath
+.project
+.settings/
