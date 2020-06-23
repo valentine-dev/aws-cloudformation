@@ -1,9 +1,9 @@
-/**
- * 
- */
 package ca.enjoyit.aws.lambda.function.model;
 
+import com.amazonaws.services.elasticsearch.model.VPCOptions;
+import com.amazonaws.util.CollectionUtils;
 import com.amazonaws.util.StringUtils;
+import ca.enjoyit.aws.lambda.function.ElasticsearchWithFGAC;
 
 /**
  * Here are the requirements for enabling fine-grained access control: -
@@ -133,15 +133,26 @@ public enum CreateDomainOptionsEnum implements DomainOperationOptions {
 	 * getValue(CustomResourceRequest request) { return (String)
 	 * request.getResourceProperties().get(this.getOptionName()); } },
 	 */
-	AVAILABILITY_ZONE_COUNT("availabilityZoneCount") {
+	VPC_OPTIONS("vpcOptions") {
 		@Override
-		public Integer getValue(CustomResourceRequest request) {
-			return getIntegerValue(request);
+		public VPCOptions getValue(CustomResourceRequest request) {
+			VPCOptions value = null;
+			Object optionValue = request.getResourceProperties().get(getOptionName());
+			String jsonString = ElasticsearchWithFGAC.GSON.toJson(optionValue);
+			try {
+				value = ElasticsearchWithFGAC.GSON.fromJson(jsonString, VPCOptions.class);
+			} catch(JsonSyntaxException e) {
+				e.printStackTrace();
+			}
+			
+			return value;
 		}
-
+		
 		@Override
 		public boolean validate(CustomResourceRequest request) {
-			return AvailabilityZoneCountEnum.contains(getValue(request));
+			VPCOptions options = getValue(request);
+			return (null!= options && !CollectionUtils.isNullOrEmpty(options.getSecurityGroupIds())
+					&& !CollectionUtils.isNullOrEmpty(options.getSubnetIds()));
 		}
 	};
 
