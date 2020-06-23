@@ -29,6 +29,7 @@ import com.amazonaws.services.elasticsearch.model.ResourceNotFoundException;
 import com.amazonaws.services.elasticsearch.model.TLSSecurityPolicy;
 import com.amazonaws.services.elasticsearch.model.UpdateElasticsearchDomainConfigRequest;
 import com.amazonaws.services.elasticsearch.model.UpdateElasticsearchDomainConfigResult;
+import com.amazonaws.services.elasticsearch.model.VPCOptions;
 import com.amazonaws.services.elasticsearch.model.VolumeType;
 import com.amazonaws.services.elasticsearch.model.ZoneAwarenessConfig;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -158,13 +159,14 @@ public class ElasticsearchInVPCWithFGAC implements RequestHandler<CustomResource
 		final Integer ebsVolumeSize = (Integer) CreateDomainOptionsEnum.EBS_VOLUME_SIZE.getValue(request);
 		final String masterUserName = (String) CreateDomainOptionsEnum.MASTER_USER_NAME.getValue(request);
 		final String masterUserPassword = (String) CreateDomainOptionsEnum.MASTER_USER_PASSWORD.getValue(request);
-		final Integer availabilityZoneCount = (Integer) CreateDomainOptionsEnum.AVAILABILITY_ZONE_COUNT.getValue(request);
+		final VPCOptions vpcOptions = (VPCOptions) CreateDomainOptionsEnum.VPC_OPTIONS.getValue(request);
 
 		try {
 
 			// Create the request and set the desired configuration options
 			final CreateElasticsearchDomainRequest createRequest = new CreateElasticsearchDomainRequest()
 					.withDomainName(domainName).withElasticsearchVersion(elasticsearchVersion)
+					.withVPCOptions(vpcOptions)
 					.withEBSOptions(new EBSOptions()
 							.withEBSEnabled(true).withVolumeSize(ebsVolumeSize).withVolumeType(VolumeType.Gp2))
 					.withAdvancedSecurityOptions(
@@ -180,17 +182,22 @@ public class ElasticsearchInVPCWithFGAC implements RequestHandler<CustomResource
 					.withDomainEndpointOptions(new DomainEndpointOptions().withEnforceHTTPS(true)
 							.withTLSSecurityPolicy(TLSSecurityPolicy.PolicyMinTLS12201907))
 					.withEncryptionAtRestOptions(new EncryptionAtRestOptions()
-							.withEnabled(true))
-							.withElasticsearchClusterConfig(new ElasticsearchClusterConfig()
-							.withDedicatedMasterEnabled(true)
-							.withDedicatedMasterCount(masterNodeCount)
-							.withDedicatedMasterType(masterInstanceType)
-							.withInstanceType(dataInstanceType)
-							.withInstanceCount(dataNodeCount)
-							.withZoneAwarenessEnabled(true)
-							.withZoneAwarenessConfig(new ZoneAwarenessConfig()
-									.withAvailabilityZoneCount(availabilityZoneCount)));
-
+							.withEnabled(true));
+			
+			final ElasticsearchClusterConfig clusterConfig = new ElasticsearchClusterConfig()
+					.withDedicatedMasterEnabled(true)
+					.withDedicatedMasterCount(masterNodeCount)
+					.withDedicatedMasterType(masterInstanceType)
+					.withInstanceType(dataInstanceType)
+					.withInstanceCount(dataNodeCount);
+			int availabilityZoneCount = vpcOptions.getSubnetIds().size();
+			if (availabilityZoneCount > 1) {
+				clusterConfig.withZoneAwarenessEnabled(true)
+					.withZoneAwarenessConfig(new ZoneAwarenessConfig()
+						.withAvailabilityZoneCount(availabilityZoneCount));
+			}
+			createRequest.withElasticsearchClusterConfig(clusterConfig);
+			
 			// Make the request.
 			logger.info("Sending domain creation request...");
 			createResponse = client.createElasticsearchDomain(createRequest);
