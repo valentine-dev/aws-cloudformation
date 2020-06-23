@@ -48,7 +48,7 @@ Parameters:
   DomainName:
     Description: Elasticsearch domain name
     Type: String
-    AllowedPattern: '[a-z0-9-]{3,28}'
+    AllowedPattern: '[a-z][a-z0-9-]{2,27}'
   ElasticsearchVersion:
     Description: Elasticsearch version
     Type: String
@@ -58,15 +58,6 @@ Parameters:
       - 7.1
       - 6.8
       - 6.7
-      - 6.5
-      - 6.4
-      - 6.3
-      - 6.2
-      - 6.0
-      - 5.6
-      - 5.5
-      - 5.3
-      - 5.1  
   MasterUserName:
     Description: Master user name for Kibana
     Type: String
