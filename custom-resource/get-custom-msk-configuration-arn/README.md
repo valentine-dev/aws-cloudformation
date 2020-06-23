@@ -4,7 +4,7 @@
 1. Currently, AWS CloudFormation does not support the creation of custom MSK configuration. We do not have the functionality as seen in the document of [AWS::MSK::Cluster][1]. The only way to configure an MSK clutser with the custom configuration is to refer to the ARN in the [AWS::MSK::Cluster ConfigurationInfo][2] created manually via the CLI.
 2. Given a custom MSK configuration properties file and kafka version, we need to find ARN of matching one from currently available custom MSK configurations or create a new custom MSK configuration and return the ARN.
 
-## Solution Implemented in `get_custom_msk_configuration_test.yaml`
+## Solution Implemented in `get-custom-msk-config.yaml`
 1. Read given custom MSK configuraiton file from S3;
 2. Read the complete list of available custom MSK configurations from current AWS account and region;
 3. Check whether the given custom MSK configuration is already available;
