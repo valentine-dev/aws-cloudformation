@@ -3,7 +3,7 @@ package ca.enjoyit.aws.lambda.function.model;
 import com.amazonaws.services.elasticsearch.model.VPCOptions;
 import com.amazonaws.util.CollectionUtils;
 import com.amazonaws.util.StringUtils;
-import ca.enjoyit.aws.lambda.function.ElasticsearchWithFGAC;
+import ca.enjoyit.aws.lambda.function.ElasticsearchInVPCWithFGAC;
 
 /**
  * Here are the requirements for enabling fine-grained access control: -
@@ -140,7 +140,7 @@ public enum CreateDomainOptionsEnum implements DomainOperationOptions {
 			Object optionValue = request.getResourceProperties().get(getOptionName());
 			String jsonString = ElasticsearchWithFGAC.GSON.toJson(optionValue);
 			try {
-				value = ElasticsearchWithFGAC.GSON.fromJson(jsonString, VPCOptions.class);
+				value = ElasticsearchInVPCWithFGAC.GSON.fromJson(jsonString, VPCOptions.class);
 			} catch(JsonSyntaxException e) {
 				e.printStackTrace();
 			}
