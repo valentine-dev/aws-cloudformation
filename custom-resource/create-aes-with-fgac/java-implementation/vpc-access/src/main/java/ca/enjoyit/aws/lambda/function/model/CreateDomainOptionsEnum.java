@@ -138,7 +138,7 @@ public enum CreateDomainOptionsEnum implements DomainOperationOptions {
 		public VPCOptions getValue(CustomResourceRequest request) {
 			VPCOptions value = null;
 			Object optionValue = request.getResourceProperties().get(getOptionName());
-			String jsonString = ElasticsearchWithFGAC.GSON.toJson(optionValue);
+			String jsonString = ElasticsearchInVPCWithFGAC.GSON.toJson(optionValue);
 			try {
 				value = ElasticsearchInVPCWithFGAC.GSON.fromJson(jsonString, VPCOptions.class);
 			} catch(JsonSyntaxException e) {

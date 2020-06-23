@@ -1,0 +1,36 @@
+plugins {
+    id 'java-library'
+}
+
+version = 1.0
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api (
+        'org.projectlombok:lombok:1.16.16',
+        'com.google.code.gson:gson:2.2.4',
+        'com.amazonaws:aws-lambda-java-core:1.2.1'
+    )
+    implementation (
+    	'com.amazonaws:aws-java-sdk-core:1.11.801',
+    	'com.amazonaws:aws-java-sdk-lambda:1.11.801',
+    	'com.amazonaws:aws-java-sdk-elasticsearch:1.11.801',
+    	'com.squareup.okhttp3:okhttp:4.7.2'
+    )
+    
+    annotationProcessor (
+    	'org.projectlombok:lombok:1.16.16'
+    )
+}
+
+task buildZip(type: Zip) {
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtimeClasspath
+    }
+}
+
+build.dependsOn buildZip
