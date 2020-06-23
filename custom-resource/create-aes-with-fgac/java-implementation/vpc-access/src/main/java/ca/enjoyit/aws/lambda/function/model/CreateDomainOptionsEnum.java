@@ -4,6 +4,7 @@ import com.amazonaws.services.elasticsearch.model.VPCOptions;
 import com.amazonaws.util.CollectionUtils;
 import com.amazonaws.util.StringUtils;
 import ca.enjoyit.aws.lambda.function.ElasticsearchInVPCWithFGAC;
+import com.google.gson.JsonSyntaxException;
 
 /**
  * Here are the requirements for enabling fine-grained access control: -
