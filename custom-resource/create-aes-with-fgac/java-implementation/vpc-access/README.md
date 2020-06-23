@@ -9,4 +9,4 @@ Choose internet or VPC access. To enable VPC access, we use private IP addresses
 ## VPC access
 
 Here we use vpc access as selected in Amazon Management Console:
-![VPC access](aes_network_configuration_vpc.png)
+![VPC access](image/aes-network-configuration-vpc.png)
