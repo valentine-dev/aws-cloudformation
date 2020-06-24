@@ -47,88 +47,89 @@ Resources:
           s3 = new aws.S3()
           kafka = new aws.Kafka()
           response = require('cfn-response')
-          
+
           exports.handler = function(event, context) {
             context.callbackWaitsForEmptyEventLoop = false
             if (event.RequestType == "Delete") {
               response.send(event, context, "SUCCESS")
               return
             }
-            let responseStatus = "FAILED"
-            let responseData = {}
-            let params = {
+            rspInfo = "FAILED"
+            rspData = {}
+            params = {
               Bucket: event.ResourceProperties.s3BucketName,
               Key: event.ResourceProperties.s3ObjectKeyName
             }
-            let kafkaVersion = event.ResourceProperties.kafkaVersion
+            version = event.ResourceProperties.kafkaVersion
             s3.getObject(params, function(err, s3Data) {
               if (err) {
-                responseData = {Error: "S3 call failed"}
-                response.send(event, context, responseStatus, responseData)
+                rspData = {Error: "S3 call failed"}
+                response.send(event, context, rspInfo, rspData)
                 return
               } else {
-                let configFileContent = s3Data.Body.toString('utf-8')
+                configFile = s3Data.Body.toString('utf-8')
                 kafka.listConfigurations({}, function(err, listConfigData) {
                   if (err) {
-                    responseData = {Error: "Kafka ListConfigurations call failed"}
-                    response.send(event, context, responseStatus, responseData)
+                    rspData = {Error: "ListConfigurations call failed"}
+                    response.send(event, context, rspInfo, rspData)
                     return
                   } else {
-                    let remainingCalls = listConfigData.Configurations.length
+                    remainingCalls = listConfigData.Configurations.length
                     for (let config of listConfigData.Configurations) {
-                      if (config.KafkaVersions.includes(kafkaVersion)) {
-                        let params = { Arn: config.Arn, Revision: 1 }
+                      if (config.KafkaVersions.length == 0 || config.KafkaVersions.includes(version)) {
+                        params = { Arn: config.Arn, Revision: 1 }
                         kafka.describeConfigurationRevision(params, function(err, getConfigData) {
                           if (err) {
-                            responseData = {Error: "Kafka describeConfigurationRevision call failed"}
-                            response.send(event, context, responseStatus, responseData)
+                            rspData = {Error: "DescribeConfigurationRevision call failed"}
+                            response.send(event, context, rspInfo, rspData)
                             return
                           } else {
                             let configContent = getConfigData.ServerProperties.toString('utf-8');
-                            if (configContent.trim() === configFileContent.trim() && responseStatus !== "SUCCESS") {
-                              responseStatus = "SUCCESS"
-                              responseData = {Info: getConfigData.Arn}
-                              response.send(event, context, responseStatus, responseData)
+                            if (configContent.trim() === configFile.trim() && rspInfo !== "SUCCESS") {
+                              rspInfo = "SUCCESS"
+                              rspData = {Info: getConfigData.Arn}
+                              response.send(event, context, rspInfo, rspData)
                               return
+                            } else {
+                              --remainingCalls
+                              if (remainingCalls <= 0 && rspInfo !== "SUCCESS") {
+                                rspInfo = createConfig(event, context, rspInfo, configFile)
+                              }
                             }
-                          }
-                          --remainingCalls
-                          if (remainingCalls <= 0 && responseStatus !== "SUCCESS") {
-                            const configName = event.ResourceProperties.s3ObjectKeyName.replace(/[^A-Za-z0-9]/g, '-') + '-' + Date.now();
-                            
-                            const createParams = {
-                              KafkaVersions: [ kafkaVersion ],
-                              Name: configName,
-                              ServerProperties: configFileContent,
-                              Description: 'Custom MSK Configuration Created from S3 File'
-                            };
-                            kafka.createConfiguration(createParams, function(err, createConfigData) {
-                              if (err) {
-                                responseData = {Error: "Kafka createConfiguration call failed"}
-                                response.send(event, context, responseStatus, responseData)
-                                return
-                              } else {
-                                responseStatus = "SUCCESS"
-                                responseData = {Info: createConfigData.Arn}
-                                response.send(event, context, responseStatus, responseData)
-                                return
-                              } 
-                            });
                           }
                         })
                       } else {
                         --remainingCalls
-                        if (remainingCalls <= 0 && responseStatus !== "SUCCESS") {
-                          responseStatus = "SUCCESS"
-                          responseData = {Info: "No matching version."}
-                          response.send(event, context, responseStatus, responseData)
-                          return
+                        if (remainingCalls <= 0 && rspInfo !== "SUCCESS") {
+                          rspInfo = createConfig(event, context, rspInfo, configFile)
                         }
                       }
                     }
                   }
                 })
               }
+           })
+          }
+
+          function createConfig (event, context, rspInfo, config) {
+            configName = event.ResourceProperties.s3ObjectKeyName.replace(/[^A-Za-z0-9]/g, '-') + '-' + Date.now()
+            params = {
+              KafkaVersions: [],
+              Name: configName,
+              ServerProperties: config,
+              Description: 'Custom MSK Config created'
+            }
+            kafka.createConfiguration(params, function(err, createConfigData) {
+              if (err) {
+                rspData = {Error: "CreateConfiguration call failed"}
+                response.send(event, context, rspInfo, rspData)
+                return rspInfo
+              } else {
+                rspInfo = "SUCCESS"
+                rspData = {Info: createConfigData.Arn}
+                response.send(event, context, rspInfo, rspData)
+                return rspInfo
+              } 
             })
           }
       Runtime: nodejs12.x
