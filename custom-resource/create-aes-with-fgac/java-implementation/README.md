@@ -16,6 +16,14 @@ This Gradle project contains Java source code to implement an AWS Lambda functio
 # Artifact
 After successful build, there is a zip file in ./build/distributions directory (for example, `ElasticsearchFineGrainedAccess-1.0.zip`) for CloudFormation custom resource to use. 
 
+# Test
+1. Upload the Java artifact to S3 folder (specified in the `template.yaml`);
+2. Run the `startup.sh`;
+3. Open a browser to the endpoint returned to access Elasticsearch with the provided username and password or access it through a terminal like:
+```
+curl -u admin_:Enjoy2020$ https://[DomainEndpoint]
+```
+
 # References:
 - https://docs.aws.amazon.com/lambda/latest/dg/services-cloudformation.html
 - https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-configuration-samples.html
